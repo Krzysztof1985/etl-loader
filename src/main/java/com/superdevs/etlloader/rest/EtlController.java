@@ -1,36 +1,28 @@
 package com.superdevs.etlloader.rest;
 
-import com.superdevs.etlloader.model.Animal;
-import com.superdevs.etlloader.repository.AnimalRepo;
-import com.superdevs.etlloader.service.AnimalService;
+import com.superdevs.etlloader.dto.CSVItemDto;
+import com.superdevs.etlloader.dto.CsvToSaveDto;
+import com.superdevs.etlloader.filters.DataSourceFilter;
+import com.superdevs.etlloader.service.CSVService;
+import com.superdevs.etlloader.service.ConverterService;
+import com.superdevs.etlloader.wrappers.DataResponseWrapper;
+import com.superdevs.etlloader.wrappers.ResponseWrapper;
 import lombok.AllArgsConstructor;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.context.event.EventListener;
+import org.bson.types.ObjectId;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
 @RestController
 @AllArgsConstructor
 public class EtlController {
-
-    private AnimalService service;
-    private AnimalRepo animalRepo;
-
-    @EventListener(ApplicationReadyEvent.class)
-    public void init() {
-        animalRepo.deleteAll();
-        Animal animal1 = new Animal("Dog", 3);
-        Animal animal2 = new Animal("Cat", 23);
-        Animal animal3 = new Animal("Mouse", 1);
-        Animal animal4 = new Animal("Bull", 4);
-        animalRepo.save(animal1);
-        animalRepo.save(animal2);
-        animalRepo.save(animal3);
-        animalRepo.save(animal4);
-    }
+    private CSVService csvService;
+    private ConverterService converterService;
 
     @GetMapping
     public String works() {
@@ -38,19 +30,45 @@ public class EtlController {
     }
 
     @GetMapping("hello/{input}")
-    public String sayHello(@PathVariable String input) {
-        return "SAY HELLO " + input;
+    public DataResponseWrapper<String> sayHello(@PathVariable String input) {
+        DataResponseWrapper<String> response = EtlControllerResponseWrapper.ok("SAY HELLO " + input)
+                .rootMessage(ResponseWrapper.Message.of("200", "Dummy test works", "You said hello!"))
+                .build();
+        return response;
     }
 
-    @GetMapping("/getAll")
-    public List<Animal> getAll() {
-        return animalRepo.findAll();
+    @PostMapping("/upload")
+    public DataResponseWrapper<String> uploadCSV(@RequestBody MultipartFile file) {
+        String uuid = new ObjectId().toString();
+        List<CsvToSaveDto> output = converterService.convert(file, uuid);
+        csvService.saveAllCSVItems(output);
+
+        DataResponseWrapper<String> response = EtlControllerResponseWrapper.ok(uuid)
+                .rootMessage(ResponseWrapper.Message.of("200", "Successfully uploaded CSV fiel",
+                        "Upload OK"))
+                .build();
+        return response;
     }
 
-    @GetMapping("find/{name}")
-    public Animal findByName(@PathVariable String name) {
-       return service.findAnimalByName(name);
+    @GetMapping("/uuid/{uuid}")
+    public DataResponseWrapper<CSVItemDto> findAllItemsForWorkItem(String uuid) {
+        List<CSVItemDto> allItemsForWorkId = csvService.getAllItemsForWorkId(uuid);
+
+        DataResponseWrapper<CSVItemDto> response = EtlControllerResponseWrapper.ok(allItemsForWorkId)
+                .rootMessage(ResponseWrapper.
+                        Message.of("csvLoader-200", "Successfully fetched app",
+                        "Successfully added application icon"))
+                .build();
+        return response;
+    }
+
+    @PostMapping("/calculate/{uuid}/clicks")
+    public DataResponseWrapper<CSVItemDto> findMatching(@PathVariable String uuid, @RequestBody DataSourceFilter dataSourceFilter) {
+        csvService.countTotalClicks(uuid, dataSourceFilter.getDataSource(), dataSourceFilter.getFrom(), dataSourceFilter.getTo());
+        return null;
     }
 
 
+    private class EtlControllerResponseWrapper extends DataResponseWrapper<CSVItemDto> {
+    }
 }

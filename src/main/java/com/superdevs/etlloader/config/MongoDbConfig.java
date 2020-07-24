@@ -9,6 +9,12 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.mongodb.MongoDatabaseFactory;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.SimpleMongoClientDatabaseFactory;
+import org.springframework.data.mongodb.core.convert.DefaultMongoTypeMapper;
+import org.springframework.data.mongodb.core.convert.MappingMongoConverter;
+import org.springframework.data.mongodb.core.convert.MongoCustomConversions;
+import org.springframework.data.mongodb.core.mapping.MongoMappingContext;
+
+import java.util.Arrays;
 
 @Configuration
 public class MongoDbConfig {
@@ -31,7 +37,18 @@ public class MongoDbConfig {
 
     @Bean
     public MongoTemplate mongoTemplate() {
-        MongoTemplate template = new MongoTemplate(mongoDbFactory());
+        MappingMongoConverter converter =
+                new MappingMongoConverter(mongoDbFactory(), new MongoMappingContext());
+        converter.setTypeMapper(new DefaultMongoTypeMapper(null));
+        MongoTemplate template = new MongoTemplate(mongoDbFactory(), converter);
         return template;
+    }
+
+    @Bean
+    public MongoCustomConversions mongoCustomConversions() {
+        return new MongoCustomConversions(Arrays.asList(
+                new MongoConverters.BigDecimalDecimal128Converter(),
+                new MongoConverters.Decimal128BigDecimalConverter()
+        ));
     }
 }

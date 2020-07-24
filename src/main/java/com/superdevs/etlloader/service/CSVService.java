@@ -1,0 +1,15 @@
+package com.superdevs.etlloader.service;
+
+import com.superdevs.etlloader.dto.CSVItemDto;
+import com.superdevs.etlloader.dto.CsvToSaveDto;
+
+import java.util.List;
+
+public interface CSVService {
+
+    void saveAllCSVItems(List<CsvToSaveDto> items);
+
+    List<CSVItemDto> getAllItemsForWorkId(String uuid);
+
+    List<CSVItemDto> countTotalClicks(String uuid, String datasource, Long from, Long to);
+}
