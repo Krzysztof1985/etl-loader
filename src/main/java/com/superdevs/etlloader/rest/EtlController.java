@@ -12,7 +12,7 @@ public class EtlController {
         return "IT WORKS!";
     }
 
-    @GetMapping("/{input}")
+    @GetMapping("hello/{input}")
     public String sayHello(@PathVariable String input) {
         return "SAY HELLO " + input + " !!!";
     }
