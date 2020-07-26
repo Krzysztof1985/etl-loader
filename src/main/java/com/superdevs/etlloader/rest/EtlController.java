@@ -3,6 +3,7 @@ package com.superdevs.etlloader.rest;
 import com.superdevs.etlloader.dto.CSVItemDto;
 import com.superdevs.etlloader.dto.CsvToSaveDto;
 import com.superdevs.etlloader.filters.DataSourceFilter;
+import com.superdevs.etlloader.model.CSVItem;
 import com.superdevs.etlloader.service.CSVService;
 import com.superdevs.etlloader.service.ConverterService;
 import com.superdevs.etlloader.wrappers.DataResponseWrapper;
@@ -39,11 +40,10 @@ public class EtlController {
 
     @PostMapping("/upload")
     public DataResponseWrapper<String> uploadCSV(@RequestBody MultipartFile file) {
-        String uuid = new ObjectId().toString();
-        List<CsvToSaveDto> output = converterService.convert(file, uuid);
+        List<CSVItem> output = converterService.convert(file);
         csvService.saveAllCSVItems(output);
 
-        DataResponseWrapper<String> response = EtlControllerResponseWrapper.ok(uuid)
+        DataResponseWrapper<String> response = EtlControllerResponseWrapper.ok("OK")
                 .rootMessage(ResponseWrapper.Message.of("200", "Successfully uploaded CSV fiel",
                         "Upload OK"))
                 .build();

@@ -5,7 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
-import java.math.BigDecimal;
+import java.time.ZonedDateTime;
 
 @Data
 @Builder
@@ -16,7 +16,7 @@ public class CsvToSaveDto {
     private String uuid;
     private String dataSource;
     private String campaign;
-    private long daily;
+    private ZonedDateTime daily;
     private long clicks;
     private long impressions;
 }

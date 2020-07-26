@@ -1,12 +1,9 @@
 package com.superdevs.etlloader.service;
 
-import com.mongodb.client.model.Filters;
 import com.superdevs.etlloader.dto.CSVItemDto;
-import com.superdevs.etlloader.dto.CsvToSaveDto;
 import com.superdevs.etlloader.model.CSVItem;
 import lombok.AllArgsConstructor;
 import ma.glasnost.orika.MapperFacade;
-import org.bson.conversions.Bson;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -23,9 +20,8 @@ public class CSVServiceImpl implements CSVService {
     private MapperFacade mapper;
 
     @Override
-    public void saveAllCSVItems(List<CsvToSaveDto> items) {
-        List<CSVItem> csvItems = mapper.mapAsList(items, CSVItem.class);
-        csvItems.forEach(item -> mongoTemplate.save(item));
+    public void saveAllCSVItems(List<CSVItem> items) {
+        items.forEach(item -> mongoTemplate.save(item));
     }
 
     @Override
