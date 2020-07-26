@@ -3,11 +3,13 @@ package com.superdevs.etlloader.rest;
 import com.superdevs.etlloader.dto.CSVItemDto;
 import com.superdevs.etlloader.dto.CsvToSaveDto;
 import com.superdevs.etlloader.filters.DataSourceFilter;
+import com.superdevs.etlloader.filters.MainFilter;
 import com.superdevs.etlloader.model.CSVItem;
 import com.superdevs.etlloader.service.CSVService;
 import com.superdevs.etlloader.service.ConverterService;
 import com.superdevs.etlloader.wrappers.DataResponseWrapper;
 import com.superdevs.etlloader.wrappers.ResponseWrapper;
+import io.swagger.annotations.ApiOperation;
 import lombok.AllArgsConstructor;
 import org.bson.types.ObjectId;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -62,9 +64,17 @@ public class EtlController {
         return response;
     }
 
-    @PostMapping("/calculate/{uuid}/clicks")
-    public DataResponseWrapper<CSVItemDto> findMatching(@PathVariable String uuid, @RequestBody DataSourceFilter dataSourceFilter) {
-        csvService.countTotalClicks(uuid, dataSourceFilter.getDataSource(), dataSourceFilter.getFrom(), dataSourceFilter.getTo());
+    @ApiOperation(value = "Calculate clicks based on input filters", notes = "from/to paramters takes input only in format MM/dd/yy")
+    @PostMapping("/calculate/clicks")
+    public DataResponseWrapper<CSVItemDto> findMatching(@RequestBody DataSourceFilter dataSourceFilter) {
+        csvService.countTotalClicks( dataSourceFilter.getDataSource(), dataSourceFilter.getFrom(), dataSourceFilter.getTo());
+        return null;
+    }
+
+    @ApiOperation(value = "Calculate clicks based on input filters", notes = "from/to paramters takes input only in format MM/dd/yy")
+    @PostMapping("/calculate/clicks2")
+    public DataResponseWrapper<CSVItemDto> findMatchingXXX(@RequestBody MainFilter mainFilter) {
+        System.out.println(mainFilter);
         return null;
     }
 

@@ -11,5 +11,5 @@ public interface CSVService {
 
     List<CSVItemDto> getAllItemsForWorkId(String uuid);
 
-    List<CSVItemDto> countTotalClicks(String uuid, String datasource, Long from, Long to);
+    List<CSVItemDto> countTotalClicks(String datasource, String from, String to);
 }
