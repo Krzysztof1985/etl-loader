@@ -1,0 +1,55 @@
+version: '3.4'
+services:
+  replica1:
+    image: "mongo:4.2.1"
+    container_name: "mongo1"
+    command: --replSet rs0 --oplogSize 128
+    ports:
+      - 27017:27017
+    volumes:
+      - ./db0/data:/data/db
+    networks:
+      - docker-replica-network
+    restart: always
+
+  replica2:
+    image: "mongo:4.2.1"
+    container_name: "mongo2"
+    command: --replSet rs0 --oplogSize 128
+    depends_on:
+      - replica1
+    ports:
+      - 27018:27017
+    volumes:
+      - ./db1/data:/data/db
+    networks:
+      - docker-replica-network
+    restart: always
+
+  replica3:
+    image: "mongo:4.2.1"
+    container_name: "mongo3"
+    command: --replSet rs0 --oplogSize 128
+    depends_on:
+      - replica1
+      - replica2
+    volumes:
+      - ./db2/data:/data/db
+    ports:
+      - 27019:27017
+    networks:
+      - docker-replica-network
+    restart: always
+
+  setup-rs:
+    container_name: "setupReplicaSet"
+    build: ./replica-master/
+    depends_on:
+      - replica1
+      - replica2
+      - replica3
+    networks:
+      - docker-replica-network
+networks:
+  docker-replica-network:
+

@@ -1,5 +1,8 @@
 package com.superdevs.etlloader.service;
 
+import com.mongodb.client.model.Accumulators;
+import com.mongodb.client.model.Aggregates;
+import com.mongodb.client.model.Filters;
 import com.superdevs.etlloader.dto.CSVItemDto;
 import com.superdevs.etlloader.filters.MainFilter;
 import com.superdevs.etlloader.model.CSVItem;
@@ -7,14 +10,21 @@ import com.superdevs.etlloader.util.DateUtilFormatter;
 import lombok.AllArgsConstructor;
 import ma.glasnost.orika.MapperFacade;
 import org.bson.Document;
+import org.bson.conversions.Bson;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.aggregation.AccumulatorOperators;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.aggregation.AggregationResults;
+import org.springframework.data.mongodb.core.aggregation.AggregationUpdate;
 import org.springframework.data.mongodb.core.aggregation.GroupOperation;
 import org.springframework.data.mongodb.core.aggregation.MatchOperation;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Component;
+
+import java.util.Arrays;
+
+import static com.mongodb.client.model.Filters.eq;
 
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -74,19 +84,36 @@ public class CSVServiceImpl implements CSVService {
                 .map(Map.Entry::getKey)
                 .toArray(String[]::new);
 
-        Criteria matchCriteria = generateCriteria(mainFilter, dataSources, fromDate, tillDate);
+        Criteria matchCriteria = generateCriteria(mainFilter, dataSources,
+                fromDate, tillDate);
 
         GroupOperation groupOperation = Aggregation.group(groupingFields);
+        for (int i = 0; i < groupingFields.length; i++) {
+            String groupingFieldName = groupingFields[i];
+            groupOperation = groupOperation.sum(groupingFieldName).as(groupingFieldName);
+        }
+
+//        List<Bson> bsons = Arrays.asList(Aggregates.match(Filters.and(Filters.in("dataSource", Arrays.asList("Google Ads", "Twitter Ads")), Filters.gte("clicks", 100L), Filters.eq("campaign", "Adventmarkt Touristik"))), Aggregates.group("$dataSource", Accumulators.sum("totalClicks", "$clicks"),
+//                Accumulators.sum("totalImpressions", "$impressions")));
+
+        AccumulatorOperators.Sum clicks = AccumulatorOperators.Sum.sumOf("clicks");
+
+
+
+        AggregationUpdate.group("_id")
+                .addToSet(name)
+                .as("groupedBy")
+                .sum("clicks");
+
 
         MatchOperation match = Aggregation.match(matchCriteria);
-
-        Aggregation aggregation = Aggregation.newAggregation(match, groupOperation);
-
+        Aggregation aggregation = AggregationUpdate.newAggregation(match, groupOperation);
+//
         AggregationResults<Document> aggregate = mongoTemplate.aggregate(aggregation, CSVItem.class, Document.class);
-
-        List<Document> mappedResults = aggregate.getMappedResults();
-        return mappedResults;
-
+//
+//        List<Document> mappedResults = aggregate.getMappedResults();
+//        return mappedResults;
+        return null;
     }
 
     private Criteria generateCriteria(MainFilter mainFilter, Set<String> dataSources, ZonedDateTime fromDate, ZonedDateTime tillDate) {

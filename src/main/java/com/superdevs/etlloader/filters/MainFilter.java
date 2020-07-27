@@ -16,7 +16,7 @@ import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_EMPTY;
 @JsonInclude(NON_EMPTY)
 public class MainFilter {
 
-    @ApiModelProperty(name = "Metric filters", required = true, example = "{\"clicks\":\"true\",\"impressions\":\"true\"}")
+    @ApiModelProperty(name = "Metric filters", required = true, example = "{\"clicks\": true,\"impressions\":true}")
     Map<String, Boolean> metrics = Map.of("clicks", true, "impressions", true);
 
     @ApiModelProperty(name = "dataSource", required = false, example = "[\"Google Ads\", \"Twitter Ads\"]")
@@ -24,6 +24,11 @@ public class MainFilter {
 
     @ApiModelProperty(name = "campaign", required = false, example = "[\"Carfinder\",  \"PLA\"]")
     Set<String> campaigns = Set.of("Carfinder", "PLA");
+
+    @ApiModelProperty(name = "Grouping dimension", example = "dataSource", value = "dataSource", notes = "<b>Please one of two possible grouping dimensions:" +
+            "* dataSource\n" +
+            "* campaign</b>")
+    GroupDimension groupDimension;
 
     @Pattern(regexp = "\\d{2}\\/\\d{2}\\/\\d{2}")
     @ApiModelProperty(name = "from", example = "12/18/20", required = true, notes = "Input starting date parameter must be in format <b> MM/dd/yy </b>")
