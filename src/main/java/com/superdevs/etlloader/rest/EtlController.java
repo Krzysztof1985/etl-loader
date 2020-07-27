@@ -77,7 +77,17 @@ public class EtlController {
         System.out.println(mainFilter);
 
         csvService.generateAggregatedData(mainFilter);
-
+/**
+ * db.csv_data.aggregate([
+ * {
+ * $match : { "dataSource": "Google Ads"}
+ * },
+ * {
+ *  $group : {"_id" : {"daily" :"$daily", "dataSource":"$dataSource"},
+ *  "clicks" : { "$sum" : "$clicks"}, "impressions" : {$sum : "$impressions"}}
+ * }
+ * ])
+ */
         return null;
     }
 
