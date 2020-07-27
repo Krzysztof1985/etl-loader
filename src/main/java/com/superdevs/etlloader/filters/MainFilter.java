@@ -12,7 +12,7 @@ import java.util.Set;
 @Builder
 public class MainFilter {
 
-    @ApiModelProperty(name = "Metric filters", required = true, example = "[\"clicks\":\"true\",\"impressions\":\"true\"]")
+    @ApiModelProperty(name = "Metric filters", required = true, example = "{\"clicks\":\"true\",\"impressions\":\"true\"}")
     Map<String, Boolean> metrics = Map.of("clicks", true, "impressions", true);
 
 

@@ -71,10 +71,13 @@ public class EtlController {
         return null;
     }
 
-    @ApiOperation(value = "Calculate clicks based on input filters", notes = "from/to paramters takes input only in format MM/dd/yy")
+    @ApiOperation(value = "Calculate clicks based on input filters", notes = "from/to parameters takes input only in format MM/dd/yy")
     @PostMapping("/calculate/clicks2")
     public DataResponseWrapper<CSVItemDto> findMatchingXXX(@RequestBody MainFilter mainFilter) {
         System.out.println(mainFilter);
+
+        csvService.generateAggregatedData(mainFilter);
+
         return null;
     }
 

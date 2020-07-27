@@ -1,6 +1,7 @@
 package com.superdevs.etlloader.service;
 
 import com.superdevs.etlloader.dto.CSVItemDto;
+import com.superdevs.etlloader.filters.MainFilter;
 import com.superdevs.etlloader.model.CSVItem;
 
 import java.util.List;
@@ -12,4 +13,6 @@ public interface CSVService {
     List<CSVItemDto> getAllItemsForWorkId(String uuid);
 
     List<CSVItemDto> countTotalClicks(String datasource, String from, String to);
+
+    void generateAggregatedData(MainFilter mainFilter);
 }
