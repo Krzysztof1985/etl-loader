@@ -2,11 +2,9 @@ package com.superdevs.etlloader.config;
 
 import com.fasterxml.classmate.TypeResolver;
 import com.google.common.base.Predicates;
-import com.superdevs.etlloader.filters.DimensionFilter;
-import com.superdevs.etlloader.filters.MetricsFilter;
+import com.superdevs.etlloader.filters.MainFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.util.MimeTypeUtils;
 import springfox.documentation.builders.ApiInfoBuilder;
 import springfox.documentation.builders.PathSelectors;
 import springfox.documentation.builders.RequestHandlerSelectors;
@@ -32,9 +30,7 @@ public class SwaggerConfig {
                 .paths(PathSelectors.any())
                 .build()
                 .additionalModels(
-                        typeResolver.resolve(MetricsFilter.class),
-                        typeResolver.resolve(MetricsFilter.class),
-                        typeResolver.resolve(DimensionFilter.class)
+                        typeResolver.resolve(MainFilter.class)
                 )
                 .apiInfo(apiInfo())
                 .consumes(Set.of(APPLICATION_JSON_VALUE))

@@ -18,6 +18,7 @@ import org.springframework.stereotype.Component;
 
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 @Component
@@ -36,13 +37,10 @@ public class CSVServiceImpl implements CSVService {
     }
 
     @Override
-    public List<CSVItemDto> getAllItemsForWorkId(String uuid) {
-        Query query = Query.query(Criteria.where("uuid").is(uuid));
-        List<CSVItem> csvItems = mongoTemplate.find(query, CSVItem.class);
-
-        List<CSVItemDto> csvItemDtos = mapper.mapAsList(csvItems, CSVItemDto.class);
-        return csvItemDtos;
+    public void deleteAllItems() {
+        mongoTemplate.remove(new Query(), CSVItem.class);
     }
+
 
     @Override
     public List<CSVItemDto> countTotalClicks(String datasource, String from, String to) {
@@ -55,7 +53,6 @@ public class CSVServiceImpl implements CSVService {
                         .gt(fromDate)
                         .lte(tillDate));
 
-
         Query query = Query.query(criteria);
         List<CSVItem> csvItems = mongoTemplate.find(query, CSVItem.class);
         List<CSVItemDto> csvItemDtos = mapper.mapAsList(csvItems, CSVItemDto.class);
@@ -63,28 +60,21 @@ public class CSVServiceImpl implements CSVService {
     }
 
     @Override
-    public void generateAggregatedData(MainFilter mainFilter) {
-
+    public List<Document> generateAggregatedData(MainFilter mainFilter) {
         Set<String> dataSources = mainFilter.getDataSource();
-
-
         String from = mainFilter.getFrom();
         String to = mainFilter.getTo();
         ZonedDateTime fromDate = dateUtilFormatter.convertDateFromString(from);
         ZonedDateTime tillDate = dateUtilFormatter.convertDateFromString(to);
 
-
         String[] groupingFields = mainFilter.getMetrics()
                 .entrySet()
                 .stream()
-                .filter(e -> e.getValue())
-                .map(e -> e.getKey())
+                .filter(Map.Entry::getValue)
+                .map(Map.Entry::getKey)
                 .toArray(String[]::new);
 
-        Criteria matchCriteria = Criteria.where("dataSource").in(dataSources)
-                .andOperator(Criteria.where("daily")
-                        .gt(fromDate)
-                        .lte(tillDate));
+        Criteria matchCriteria = generateCriteria(mainFilter, dataSources, fromDate, tillDate);
 
         GroupOperation groupOperation = Aggregation.group(groupingFields);
 
@@ -94,9 +84,26 @@ public class CSVServiceImpl implements CSVService {
 
         AggregationResults<Document> aggregate = mongoTemplate.aggregate(aggregation, CSVItem.class, Document.class);
 
-
         List<Document> mappedResults = aggregate.getMappedResults();
-        System.out.println(mappedResults);
+        return mappedResults;
 
+    }
+
+    private Criteria generateCriteria(MainFilter mainFilter, Set<String> dataSources, ZonedDateTime fromDate, ZonedDateTime tillDate) {
+        Criteria matchCriteria = null;
+        Set<String> campaigns = mainFilter.getCampaigns();
+        if (campaigns.size() > 0) {
+            matchCriteria = Criteria.where("dataSource").in(dataSources)
+                    .andOperator(Criteria.where("daily")
+                            .gt(fromDate)
+                            .lte(tillDate))
+                    .and("campaign").in(campaigns);
+        } else {
+            matchCriteria = Criteria.where("dataSource").in(dataSources)
+                    .andOperator(Criteria.where("daily")
+                            .gt(fromDate)
+                            .lte(tillDate));
+        }
+        return matchCriteria;
     }
 }
