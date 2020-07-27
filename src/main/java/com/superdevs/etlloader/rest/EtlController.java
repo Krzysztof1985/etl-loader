@@ -38,7 +38,7 @@ public class EtlController {
     private CSVService csvService;
     private ConverterService converterService;
 
-    @ApiOperation(value = "Performs upload csv file", notes = "Values in CSV file must be unique")
+    @ApiOperation(value = "Performs upload csv file", notes = "<b>Values in CSV file must be unique, if in db exists entry which is in file, application will crash</b>")
     @ApiResponses({
             @ApiResponse(code = 200, message = CODE_200),
             @ApiResponse(code = 400, message = CODE_400, response = ResponseWrapper.class),
@@ -73,7 +73,7 @@ public class EtlController {
         return response;
     }
 
-    @ApiOperation(value = "Calculate clicks based on input filters", notes = "from/to parameters takes input only in format MM/dd/yy")
+    @ApiOperation(value = "Calculate statistics based on input filters", notes = "<b>from/to parameters takes input only in format MM/dd/yy</b>")
     @ApiResponses({
             @ApiResponse(code = 200, message = CODE_200),
             @ApiResponse(code = 400, message = CODE_400, response = ResponseWrapper.class),
@@ -81,20 +81,8 @@ public class EtlController {
     })
     @PostMapping("/calculate/stats")
     public DataResponseWrapper<Document> calculateStatistics(@RequestBody MainFilter mainFilter) {
-        System.out.println(mainFilter);
-
         List<Document> documents = csvService.generateAggregatedData(mainFilter);
-/**
- * db.csv_data.aggregate([
- * {
- * $match : { "dataSource": "Google Ads"}
- * },
- * {
- *  $group : {"_id" : {"daily" :"$daily", "dataSource":"$dataSource"},
- *  "clicks" : { "$sum" : "$clicks"}, "impressions" : {$sum : "$impressions"}}
- * }
- * ])
- */
+
         DataResponseWrapper<Document> response = EtlControllerResponseWrapper.ok(documents)
                 .rootMessage(ResponseWrapper.
                         Message.of("csvLoader-200", "Successfully performed aggregation",
@@ -102,7 +90,6 @@ public class EtlController {
                 .build();
         return response;
     }
-
 
     private class EtlControllerResponseWrapper extends DataResponseWrapper<CSVItemDto> {
     }

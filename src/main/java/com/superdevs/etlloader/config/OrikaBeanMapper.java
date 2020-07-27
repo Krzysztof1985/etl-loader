@@ -31,6 +31,15 @@ public class OrikaBeanMapper extends ConfigurableMapper implements ApplicationCo
     protected void configure(MapperFactory factory) {
         this.factory = factory;
         addAllSpringBeans(applicationContext);
+        registerConverters();
+    }
+
+    private void registerConverters() {
+//        factory.classMap(Document.class, EtlCalcResponseDto.class)
+//                .field("_id","name")
+//                .field("clicks", "clicks").mapNulls(false)
+//                .field("impressions", "impressions").mapNulls(false)
+//                .register();
     }
 
 

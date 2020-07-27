@@ -25,17 +25,15 @@ public class MainFilter {
     @ApiModelProperty(name = "campaign", required = false, example = "[\"Carfinder\",  \"PLA\"]")
     Set<String> campaigns = Set.of("Carfinder", "PLA");
 
-    @ApiModelProperty(name = "Grouping dimension", example = "dataSource", value = "dataSource", notes = "<b>Please one of two possible grouping dimensions:" +
-            "* dataSource\n" +
-            "* campaign</b>")
+    @ApiModelProperty(name = "Grouping dimension", example = "dataSource", value = "dataSource", required = true)
     GroupDimension groupDimension;
 
     @Pattern(regexp = "\\d{2}\\/\\d{2}\\/\\d{2}")
-    @ApiModelProperty(name = "from", example = "12/18/20", required = true, notes = "Input starting date parameter must be in format <b> MM/dd/yy </b>")
+    @ApiModelProperty(name = "from", example = "01/01/19", required = true, notes = "Input starting date parameter must be in format <b> MM/dd/yy </b>")
     String from;
 
     @Pattern(regexp = "\\d{2}\\/\\d{2}\\/\\d{2}")
-    @ApiModelProperty(name = "to", example = "12/23/20", required = true, notes = "End date  must be in format <b> MM/dd/yy </b>")
+    @ApiModelProperty(name = "to", example = "12/30/20", required = true, notes = "End date  must be in format <b> MM/dd/yy </b>")
     String to;
 
 }

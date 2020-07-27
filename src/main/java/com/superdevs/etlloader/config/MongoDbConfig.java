@@ -3,7 +3,6 @@ package com.superdevs.etlloader.config;
 import com.mongodb.ConnectionString;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
-import com.mongodb.client.model.UpdateOptions;
 import com.superdevs.etlloader.config.converters.DateToZonedDateTimeConverter;
 import com.superdevs.etlloader.config.converters.ZonedDateTimeToDateConverter;
 import com.superdevs.etlloader.config.converters.to.document.DocumentToZonedDateTimeConverter;
@@ -12,10 +11,7 @@ import com.superdevs.etlloader.model.CSVItem;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.DependsOn;
 import org.springframework.core.convert.converter.Converter;
-
-import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.MongoDatabaseFactory;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.SimpleMongoClientDatabaseFactory;

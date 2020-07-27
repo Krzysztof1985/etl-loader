@@ -14,7 +14,7 @@ public interface Constants {
         String CODE_500 = "Internal Server Error";
     }
 
-    interface Descriptions{
+    interface Descriptions {
         String ETL_SERVICE_DESC = "Service which provides API to upload CSV file and perform some calculations";
     }
 }

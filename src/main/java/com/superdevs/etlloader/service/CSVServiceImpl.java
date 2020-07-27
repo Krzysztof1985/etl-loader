@@ -1,30 +1,19 @@
 package com.superdevs.etlloader.service;
 
-import com.mongodb.client.model.Accumulators;
-import com.mongodb.client.model.Aggregates;
-import com.mongodb.client.model.Filters;
-import com.superdevs.etlloader.dto.CSVItemDto;
 import com.superdevs.etlloader.filters.MainFilter;
 import com.superdevs.etlloader.model.CSVItem;
 import com.superdevs.etlloader.util.DateUtilFormatter;
 import lombok.AllArgsConstructor;
 import ma.glasnost.orika.MapperFacade;
 import org.bson.Document;
-import org.bson.conversions.Bson;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.aggregation.AccumulatorOperators;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.aggregation.AggregationResults;
-import org.springframework.data.mongodb.core.aggregation.AggregationUpdate;
 import org.springframework.data.mongodb.core.aggregation.GroupOperation;
 import org.springframework.data.mongodb.core.aggregation.MatchOperation;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Component;
-
-import java.util.Arrays;
-
-import static com.mongodb.client.model.Filters.eq;
 
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -51,24 +40,6 @@ public class CSVServiceImpl implements CSVService {
         mongoTemplate.remove(new Query(), CSVItem.class);
     }
 
-
-    @Override
-    public List<CSVItemDto> countTotalClicks(String datasource, String from, String to) {
-
-        ZonedDateTime fromDate = dateUtilFormatter.convertDateFromString(from);
-        ZonedDateTime tillDate = dateUtilFormatter.convertDateFromString(to);
-
-        Criteria criteria = Criteria.where("dataSource").is(datasource)
-                .andOperator(Criteria.where("daily")
-                        .gt(fromDate)
-                        .lte(tillDate));
-
-        Query query = Query.query(criteria);
-        List<CSVItem> csvItems = mongoTemplate.find(query, CSVItem.class);
-        List<CSVItemDto> csvItemDtos = mapper.mapAsList(csvItems, CSVItemDto.class);
-        return csvItemDtos;
-    }
-
     @Override
     public List<Document> generateAggregatedData(MainFilter mainFilter) {
         Set<String> dataSources = mainFilter.getDataSource();
@@ -77,7 +48,7 @@ public class CSVServiceImpl implements CSVService {
         ZonedDateTime fromDate = dateUtilFormatter.convertDateFromString(from);
         ZonedDateTime tillDate = dateUtilFormatter.convertDateFromString(to);
 
-        String[] groupingFields = mainFilter.getMetrics()
+        String[] sumFieldsToCalc = mainFilter.getMetrics()
                 .entrySet()
                 .stream()
                 .filter(Map.Entry::getValue)
@@ -87,33 +58,26 @@ public class CSVServiceImpl implements CSVService {
         Criteria matchCriteria = generateCriteria(mainFilter, dataSources,
                 fromDate, tillDate);
 
-        GroupOperation groupOperation = Aggregation.group(groupingFields);
-        for (int i = 0; i < groupingFields.length; i++) {
-            String groupingFieldName = groupingFields[i];
+        String dimension = mainFilter.getGroupDimension().name();
+
+        GroupOperation groupOperation = Aggregation.group(dimension);
+        groupOperation.addToSet(dimension).as(dimension);
+
+        for (int i = 0; i < sumFieldsToCalc.length; i++) {
+            String groupingFieldName = sumFieldsToCalc[i];
             groupOperation = groupOperation.sum(groupingFieldName).as(groupingFieldName);
         }
-
-//        List<Bson> bsons = Arrays.asList(Aggregates.match(Filters.and(Filters.in("dataSource", Arrays.asList("Google Ads", "Twitter Ads")), Filters.gte("clicks", 100L), Filters.eq("campaign", "Adventmarkt Touristik"))), Aggregates.group("$dataSource", Accumulators.sum("totalClicks", "$clicks"),
-//                Accumulators.sum("totalImpressions", "$impressions")));
-
-        AccumulatorOperators.Sum clicks = AccumulatorOperators.Sum.sumOf("clicks");
-
-
-
-        AggregationUpdate.group("_id")
-                .addToSet(name)
-                .as("groupedBy")
-                .sum("clicks");
-
-
         MatchOperation match = Aggregation.match(matchCriteria);
-        Aggregation aggregation = AggregationUpdate.newAggregation(match, groupOperation);
-//
+        Aggregation aggregation = Aggregation.newAggregation(match, groupOperation);
+        /**
+         * private GroupOperationBuilder newBuilder(Keyword keyword, @Nullable String reference, @Nullable Object value) {
+         * 		return new GroupOperationBuilder(this, new Operation(keyword, null, reference, value));
+         *        }
+         */
         AggregationResults<Document> aggregate = mongoTemplate.aggregate(aggregation, CSVItem.class, Document.class);
-//
-//        List<Document> mappedResults = aggregate.getMappedResults();
-//        return mappedResults;
-        return null;
+
+        List<Document> mappedResults = aggregate.getMappedResults();
+        return mappedResults;
     }
 
     private Criteria generateCriteria(MainFilter mainFilter, Set<String> dataSources, ZonedDateTime fromDate, ZonedDateTime tillDate) {
