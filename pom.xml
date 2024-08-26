@@ -16,7 +16,7 @@
 
     <properties>
         <java.version>11</java.version>
-        <springfox-swagger-ui.version>2.9.2</springfox-swagger-ui.version>
+        <springfox-swagger-ui.version>2.10.0</springfox-swagger-ui.version>
         <orika.mapper>1.5.4</orika.mapper>
         <assertj-core.version>3.16.1</assertj-core.version>
         <junit.version>4.12</junit.version>
